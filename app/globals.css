@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-background: hsl(240 10% 11%);
+  --color-foreground: hsl(240 5% 92%);
+
+  --color-card: hsl(240 8% 14%);
+  --color-card-foreground: hsl(240 5% 92%);
+
+  --color-popover: hsl(240 8% 13%);
+  --color-popover-foreground: hsl(240 5% 92%);
+
+  --color-primary: hsl(239 84% 67%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-secondary: hsl(240 6% 20%);
+  --color-secondary-foreground: hsl(240 5% 80%);
+
+  --color-muted: hsl(240 6% 18%);
+  --color-muted-foreground: hsl(240 4% 55%);
+
+  --color-accent: hsl(239 84% 67%);
+  --color-accent-foreground: hsl(0 0% 100%);
+
+  --color-destructive: hsl(0 72% 51%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+
+  --color-border: hsl(240 6% 22%);
+  --color-input: hsl(240 6% 20%);
+  --color-ring: hsl(239 84% 67%);
+
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* sidebar tokens */
+  --color-sidebar: hsl(240 9% 10%);
+  --color-sidebar-foreground: hsl(240 5% 85%);
+  --color-sidebar-primary: hsl(239 84% 67%);
+  --color-sidebar-primary-foreground: hsl(0 0% 100%);
+  --color-sidebar-accent: hsl(240 6% 18%);
+  --color-sidebar-accent-foreground: hsl(240 5% 85%);
+  --color-sidebar-border: hsl(240 6% 16%);
+  --color-sidebar-ring: hsl(239 84% 67%);
+
+  /* custom chat tokens */
+  --color-chat-bg: hsl(240 10% 11%);
+  --color-chat-surface: hsl(240 8% 14%);
+  --color-chat-sent: hsl(239 84% 67%);
+  --color-chat-sent-foreground: hsl(0 0% 100%);
+  --color-chat-received-foreground: hsl(240 5% 88%);
+  --color-chat-input-bg: hsl(240 6% 16%);
+  --color-chat-timestamp: hsl(240 4% 45%);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+    outline-color: var(--color-ring);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--color-background); }
+  ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-muted-foreground); }
+}

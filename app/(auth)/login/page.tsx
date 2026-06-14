@@ -7,19 +7,24 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { loginUser } from "@/api/auth"
+import { useAuthStore } from "@/store/authStore"
 
 export default function LoginPage() {
   const router = useRouter()
   const [form, setForm] = useState({ email: "", password: "" })
   const [loading, setLoading] = useState(false)
   const [showPassword , setShowPassword] = useState(false)
-
+  const { setUser } = useAuthStore()
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
       const res = await loginUser(form)
-      if (res.status === 200) router.push("/chats")
+      if (res.status === 200) {
+         setUser(res.data)
+        router.push("/chats")
+      }
     } finally {
       setLoading(false)
     }

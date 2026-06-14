@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"  // ← shadcn component
 import Link from "next/link"
 import { resendOtp, verifyOtp } from "@/api/auth"
+import { useAuthStore } from "@/store/authStore"
 
 export default function VerifyOTPPage() {
   const router = useRouter()
@@ -13,6 +14,7 @@ export default function VerifyOTPPage() {
   const [otp, setOtp] = useState("")
   const [message , setMessage] = useState("Check your email")
   const [loading, setLoading] = useState(false)
+  const { setUser } = useAuthStore()
 
   const handleVerify = async () => {
     if (otp.length < 6) return
@@ -20,7 +22,10 @@ export default function VerifyOTPPage() {
     setLoading(true)
     try {
       const res = await verifyOtp({otp , email})
-      if (res.status === 200) router.push("/chats")
+      if (res.status === 200) {
+        setUser(res.data)
+        router.push("/chats")
+      }
     } catch (error: any) {
         setMessage(error.response?.data?.message || "Invalid OTP")
         setTimeout(() => setMessage("Check your email"), 3000)
@@ -72,7 +77,7 @@ export default function VerifyOTPPage() {
             {loading ? "Verifying..." : "Verify code"}
           </Button>
           <Button variant="outline" onClick={resendOtpInCase} className="w-full">Resend code</Button>
-          <Link href="/login" className="text-sm text-muted-foreground hover:underline">
+          <Link href="/register" className="text-sm text-muted-foreground hover:underline">
             ← Back to sign in
           </Link>
         </CardContent>

@@ -11,9 +11,13 @@ export const ConversationList = () => {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      {conversations.map(conv => (
-        <ConversationItem key={conv.conversationId} {...conv} />
-      ))}
+       {
+        conversations.map(conv => {
+          return(
+            <ConversationItem key={conv.conversationId} {...conv}/> 
+          )
+        })
+       }
     </div>
   )
 }

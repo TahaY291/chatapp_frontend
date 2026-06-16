@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { getDirectConversations } from "@/api/conversations"
 import { getGroupConversations } from "@/api/groups"
+import { useAuthStore } from "./authStore"
 type ConversationType = "direct" | "group"
 
 interface ConversationStore {
@@ -13,6 +14,7 @@ interface ConversationStore {
     updateConversationOnNewMessage: (message: any) => void
     setActiveConversation: (conversationId: string) => void
     addConversation: (conversation: any) => void
+    resetUnreadCount: (conversationId: string)=> void
 
 }
 
@@ -38,19 +40,23 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         }
     },
     updateConversationOnNewMessage: (message) => {
+        const currentUserId = useAuthStore.getState().user?.id
+        
         set(state => ({
             conversations: state.conversations.map(conv => {
                 if (conv.conversationId !== message.conversationId) return conv
+                const isReceiver = message.senderId !== currentUserId
+                console.log(message.senderId , currentUserId , message.senderId !== currentUserId ,"The problem is here the sender and current user is always not match and this cause the isreceiver always true")
+                console.log("check is receiver or sender",isReceiver)
 
                 return {
                     ...conv,
                     lastMessage: message.content,
                     lastMessageType: message.type,
                     lastMessageAt: message.createdAt,
-                    unreadCount: conv.unreadCount + 1,  // increment unread
+                    unreadCount: isReceiver ? Number(conv.unreadCount) + 1 : Number(conv.unreadCount),
                 }
             })
-                // also bubble this conversation to the top
                 .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime())
         }))
     },
@@ -64,5 +70,14 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
             if (exists) return state
             return { conversations: [conversation, ...list] }
         })
-    }
+    },
+    resetUnreadCount: (conversationId: string) => {
+    set(state => ({
+        conversations: state.conversations.map(conv =>
+            conv.conversationId === conversationId
+                ? { ...conv, unreadCount: 0 }
+                : conv
+        )
+    }))
+}
 }))

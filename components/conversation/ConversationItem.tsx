@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { MoreVertical } from "lucide-react"
 import { useConversationStore } from "@/store/conversationStore"
 import { cn } from "@/lib/utils"
+import { formatMessageTime } from "@/lib/formatMessageTime"
 
 interface Props {
   conversationId: string
@@ -14,19 +15,22 @@ interface Props {
   lastSeen: string
   unreadCount?: number
   otherIsOnline?: boolean
+  lastMessageAt: string
 }
 
-const ConversationItem = ({ conversationId, otherAvatarUrl, otherUsername , nickname, lastMessage, lastSeen, unreadCount, otherIsOnline }: Props) => {
+const ConversationItem = ({ conversationId, otherAvatarUrl, otherUsername , nickname, lastMessage, lastMessageAt, unreadCount, otherIsOnline }: Props) => {
   const router = useRouter()
   const setActiveConversation = useConversationStore(s => s.setActiveConversation)
   const activeConversation = useConversationStore(s => s.activeConversation)
   const name = nickname ?? otherUsername
   const isActive = activeConversation === conversationId   // ← derive active state
 
+
   const handleClick = () => {
     setActiveConversation(conversationId)
     router.push(`/chats/${conversationId}`)
   }
+
 
   return (
     <div
@@ -67,7 +71,7 @@ const ConversationItem = ({ conversationId, otherAvatarUrl, otherUsername , nick
             "text-xs shrink-0 ml-2",
             isActive ? "text-primary" : "text-muted-foreground"  // ← timestamp turns indigo when active
           )}>
-            {lastSeen}
+            {formatMessageTime(lastMessageAt)}
           </span>
         </div>
         <p className={cn(

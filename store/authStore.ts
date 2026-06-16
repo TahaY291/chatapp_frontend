@@ -27,9 +27,6 @@ export const useAuthStore = create<AuthStore>()(
         }),
         {
             name: "auth-store",
-            onRehydrateStorage: () => (state) => {
-                state?.setHasHydrated(true)   // ← fires after localStorage is read
-            }
         }
     )
 )

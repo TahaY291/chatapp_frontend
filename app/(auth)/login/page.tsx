@@ -8,27 +8,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Link from "next/link"
 import { loginUser } from "@/api/auth"
 import { useAuthStore } from "@/store/authStore"
+import axios from "axios"
 
 export default function LoginPage() {
   const router = useRouter()
   const [form, setForm] = useState({ email: "", password: "" })
   const [loading, setLoading] = useState(false)
   const [showPassword , setShowPassword] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const { setUser } = useAuthStore()
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    try {
-      const res = await loginUser(form)
-      if (res.status === 200) {
-         setUser(res.data)
-        router.push("/chats")
-      }
-    } finally {
-      setLoading(false)
+   try {
+    const res = await loginUser(form)
+    setUser(res.data.data.loggedInUser)
+    router.push("/chats")
+} catch (err) {
+    if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || "Login failed")
     }
-  }
+} finally {
+    setLoading(false)
+}
+}
+
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
@@ -36,6 +41,7 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle>Welcome back</CardTitle>
           <CardDescription>Sign in to your account</CardDescription>
+          {error && <p className="text-sm text-destructive">{error}</p>}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -3,32 +3,34 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 
 interface Props {
-  name: string
-  image: string
-  isOnline: boolean
+   otherAvatarUrl: string
+  otherUsername: string
+  nickname: string
+  otherIsOnline: string
 }
 
-const ChatHeader = ({ name, image, isOnline }: Props) => {
+const ChatHeader = ({ otherUsername, nickname, otherIsOnline , otherAvatarUrl }: Props) => {
+    let name = nickname ?? otherUsername
+
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card shrink-0">
 
-      {/* Left — avatar + name + status */}
       <div className="flex items-center gap-3">
         <div className="relative">
           <Avatar className="w-10 h-10">
-            <AvatarImage src={image} alt={name} />
+            <AvatarImage src={otherAvatarUrl} alt={name} />
             <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
               {name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          {isOnline && (
+          {otherIsOnline && (
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-card rounded-full" />
           )}
         </div>
         <div>
           <h3 className="text-sm font-semibold text-foreground leading-none mb-1">{name}</h3>
           <p className="text-xs text-muted-foreground">
-            {isOnline ? "online" : "last seen recently"}
+            {otherIsOnline ? "online" : "last seen recently"}
           </p>
         </div>
       </div>

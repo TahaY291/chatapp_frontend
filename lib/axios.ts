@@ -52,54 +52,61 @@ const shouldSkipIntercept = (url: string | undefined): boolean => {
 
 api.interceptors.response.use(
     (response) => response,
- 
+
     async (error: unknown) => {
         const axiosError = error as {
             response?: { status: number };
             config?: RetryableRequestConfig;
         };
- 
+
         const originalRequest = axiosError.config;
- 
+
+        console.log("🔴 interceptor fired")
+        console.log("status:", axiosError.response?.status)
+        console.log("url:", originalRequest?.url)
+        console.log("_retry:", originalRequest?._retry)
+        console.log("shouldSkip:", shouldSkipIntercept(originalRequest?.url))
+
         if (!axiosError.response || !originalRequest) {
+            console.log("❌ no response or config — rejecting")
             return Promise.reject(error);
         }
- 
+
         const { status } = axiosError.response;
- 
-        if (
-            status !== 401 ||
-            originalRequest._retry ||
-            shouldSkipIntercept(originalRequest.url)
-        ) {
+
+        if (status !== 401 || originalRequest._retry || shouldSkipIntercept(originalRequest.url)) {
+            console.log("❌ skipping refresh because:", {
+                notA401: status !== 401,
+                alreadyRetried: originalRequest._retry,
+                skippedUrl: shouldSkipIntercept(originalRequest.url)
+            })
             return Promise.reject(error);
         }
- 
 
         if (isRefreshing) {
+            console.log("⏳ already refreshing — queuing request")
             return new Promise<void>((resolve, reject) => {
                 failedQueue.push({ resolve, reject });
             }).then(() =>
                 api(originalRequest as AxiosRequestConfig)
             ).catch((err: unknown) => Promise.reject(err));
         }
- 
 
         originalRequest._retry = true;
         isRefreshing = true;
- 
-        try {
-            await api.post(REFRESH_ENDPOINT);
- 
 
+        try {
+            console.log("🔄 attempting refresh...")
+            await api.post(REFRESH_ENDPOINT);
+            console.log("✅ refresh success — retrying original request")
             processQueue(null);
             return api(originalRequest as AxiosRequestConfig);
- 
+
         } catch (refreshError: unknown) {
+            console.log("❌ refresh failed:", refreshError)
             processQueue(refreshError);
- 
             return Promise.reject(refreshError);
- 
+
         } finally {
             isRefreshing = false;
         }

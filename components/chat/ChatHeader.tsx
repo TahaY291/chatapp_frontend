@@ -1,15 +1,18 @@
 import { Phone, Video, MoreVertical } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { CallButtons } from "../call/CallButton"
 
 interface Props {
    otherAvatarUrl: string
   otherUsername: string
   nickname: string
   otherIsOnline: string
+  conversationId: string
+  otherUserId: string
 }
 
-const ChatHeader = ({ otherUsername, nickname, otherIsOnline , otherAvatarUrl }: Props) => {
+const ChatHeader = ({ otherUsername, nickname, otherIsOnline , otherAvatarUrl , conversationId , otherUserId}: Props) => {
     let name = nickname ?? otherUsername
 
   return (
@@ -35,19 +38,7 @@ const ChatHeader = ({ otherUsername, nickname, otherIsOnline , otherAvatarUrl }:
         </div>
       </div>
 
-      {/* Right — action icons */}
-      <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-          <Phone className="w-5 h-5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-          <Video className="w-5 h-5" />
-        </Button>
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-          <MoreVertical className="w-5 h-5" />
-        </Button>
-      </div>
-
+      <CallButtons peerId={otherUserId} peerAvatar={otherAvatarUrl} peerName={name} conversationId={conversationId}  />
     </div>
   )
 }

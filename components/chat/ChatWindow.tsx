@@ -21,7 +21,6 @@ interface Props {
 const ChatWindow = ({ conversationId }: Props) => {
     const [replyTo, setReplyTo] = useState<ReplyTo | null>(null)
 
-    // ✅ everything from store now, no useState for messages/loading/pagination
     const messages = useMessageStore(s => s.messages)
     const loading = useMessageStore(s => s.loading)
     const loadingMore = useMessageStore(s => s.loadingMore)
@@ -51,56 +50,56 @@ const ChatWindow = ({ conversationId }: Props) => {
         })
     }
 
-const handleSendMessage = async (content: string, files?: any[], replyToId?: string) => {
-    if (!content.trim() && (!files || files.length === 0)) return
-    try {
-        if (files && files.length > 0) {
-            for (const selectedFile of files) {
+    const handleSendMessage = async (content: string, files?: any[], replyToId?: string) => {
+        if (!content.trim() && (!files || files.length === 0)) return
+        try {
+            if (files && files.length > 0) {
+                for (const selectedFile of files) {
+                    const newMessage = await sendMessage(
+                        conversationId,
+                        content.trim(),
+                        selectedFile.file,
+                        replyToId
+                    )
+                    useMessageStore.getState().addMessage(newMessage)
+                }
+            } else {
                 const newMessage = await sendMessage(
                     conversationId,
                     content.trim(),
-                    selectedFile.file,
+                    undefined,
                     replyToId
                 )
                 useMessageStore.getState().addMessage(newMessage)
             }
-        } else {
-            const newMessage = await sendMessage(
+
+            useConversationStore.getState().updateConversationOnNewMessage({
                 conversationId,
-                content.trim(),
-                undefined,
-                replyToId
-            )
-            useMessageStore.getState().addMessage(newMessage)
+                content: files?.length
+                    ? files[0].type === "image" ? "📷 Photo"
+                        : files[0].type === "video" ? "🎥 Video"
+                            : files[0].type === "audio" ? "🎵 Audio"
+                                : "📄 Document"
+                    : content.trim(),
+                type: files?.length ? files[0].type : "text",
+                createdAt: new Date().toISOString(),
+                senderId: user?.id
+            })
+
+            setReplyTo(null)
+
+        } catch (err) {
+            console.error("Failed to send message:", err)
         }
-
-        useConversationStore.getState().updateConversationOnNewMessage({
-            conversationId,
-            content: files?.length
-                ? files[0].type === "image" ? "📷 Photo"
-                : files[0].type === "video" ? "🎥 Video"
-                : files[0].type === "audio" ? "🎵 Audio"
-                : "📄 Document"
-                : content.trim(),
-            type: files?.length ? files[0].type : "text",
-            createdAt: new Date().toISOString(),
-            senderId: user?.id
-        })
-
-        setReplyTo(null)
-
-    } catch (err) {
-        console.error("Failed to send message:", err)
     }
-}
-const handleMarkAsRead = async () => {
-    resetUnreadCount(conversationId)
-    try {
-        await onMarkAsRead(conversationId) 
-    } catch (err) {
-        console.error("mark as read failed:", err)
+    const handleMarkAsRead = async () => {
+        resetUnreadCount(conversationId)
+        try {
+            await onMarkAsRead(conversationId)
+        } catch (err) {
+            console.error("mark as read failed:", err)
+        }
     }
-}
     if (!activeConv) {
         return (
             <div className="flex-1 flex items-center justify-center bg-background">
@@ -116,6 +115,8 @@ const handleMarkAsRead = async () => {
                 otherAvatarUrl={activeConv.otherAvatarUrl}
                 otherIsOnline={activeConv.otherIsOnline}
                 nickname={activeConv.nickname}
+                conversationId={conversationId}
+                otherUserId={activeConv.otherUserId}
             />
 
             {loading ? (

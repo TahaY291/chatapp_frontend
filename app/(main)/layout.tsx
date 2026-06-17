@@ -5,6 +5,9 @@ import { useSocketStore } from "@/store/socketStore"
 import { useAuthStore } from "@/store/authStore"
 import Sidebar from "@/components/shared/Sidebar"
 import { useRouter } from "next/navigation"
+import { OutgoingCallModal } from "@/components/call/OutgoingCallModal"
+import { IncomingCallModal } from "@/components/call/IncomingCallModal"
+import { ActiveCallModal } from "@/components/call/ActiveCall"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const fetchConversations = useConversationStore(s => s.fetchConversations)
@@ -43,6 +46,9 @@ if (!hasHydrated) return (
       <main className="flex-1 flex flex-col overflow-hidden">
         {children}
       </main>
+        <OutgoingCallModal/>
+        <IncomingCallModal/>
+        <ActiveCallModal/>
     </div>
   )
 }

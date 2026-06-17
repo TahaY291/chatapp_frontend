@@ -46,8 +46,6 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
             conversations: state.conversations.map(conv => {
                 if (conv.conversationId !== message.conversationId) return conv
                 const isReceiver = message.senderId !== currentUserId
-                console.log(message.senderId , currentUserId , message.senderId !== currentUserId ,"The problem is here the sender and current user is always not match and this cause the isreceiver always true")
-                console.log("check is receiver or sender",isReceiver)
 
                 return {
                     ...conv,

@@ -7,16 +7,45 @@ import { useCallStore } from "@/store/callStore"
 import { useSocketStore } from "@/store/socketStore"
 import { endCall as endCallApi } from "@/api/call"
 import { cn } from "@/lib/utils"
-import { useEffect } from "react"
-import { getCurrentLocalStream } from "@/lib/webrtc"
+import { useEffect, useRef, useState } from "react"
+import { cleanup, getCurrentLocalStream } from "@/lib/webrtc"
 
 export const ActiveCallModal = () => {
+
+    const [elapsed, setElapsed] = useState(0)
+    const timerRef = useRef<NodeJS.Timeout | null>(null)
+
     const activeCall = useCallStore(s => s.activeCall)
     const endCall = useCallStore(s => s.endCall)
     const toggleMute = useCallStore(s => s.toggleMute)
     const toggleCamera = useCallStore(s => s.toggleCamera)
     const socket = useSocketStore(s => s.socket)
-    // Keep hooks in the same order: call useEffect unconditionally
+
+
+    useEffect(() => {
+        if (activeCall?.status === "connected") {
+            timerRef.current = setInterval(() => {
+                setElapsed(prev => prev + 1)
+            }, 1000)
+        }
+
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current)
+                timerRef.current = null
+            }
+            setElapsed(0)
+        }
+    }, [activeCall?.status])
+
+    const formatTime = (seconds: number) => {
+        const m = Math.floor(seconds / 60).toString().padStart(2, "0")
+        const s = (seconds % 60).toString().padStart(2, "0")
+        return `${m}:${s}`
+    }
+
+
+
     useEffect(() => {
         if (!activeCall) return
         try {
@@ -26,7 +55,6 @@ export const ActiveCallModal = () => {
                 localVideo.srcObject = stream
             }
         } catch (err) {
-            // ignore in non-DOM environments
         }
     }, [activeCall])
 
@@ -38,6 +66,7 @@ export const ActiveCallModal = () => {
         } catch (err) {
             console.error(err)
         } finally {
+            cleanup()
             endCall()
         }
     }
@@ -64,7 +93,7 @@ export const ActiveCallModal = () => {
                         <div className="text-center">
                             <h2 className="text-2xl font-semibold">{activeCall.peerName}</h2>
                             <p className="text-muted-foreground text-sm mt-1">
-                                {activeCall.status === "connecting" ? "Connecting..." : "00:00"}
+                                {activeCall.status === "connecting" ? "Connecting..." : formatTime(elapsed)}
                             </p>
                         </div>
                     </div>
@@ -76,6 +105,7 @@ export const ActiveCallModal = () => {
                         <video id="local-video" autoPlay playsInline muted className="w-full h-full object-cover" />
                     </div>
                 )}
+                <audio id="remote-audio" autoPlay playsInline className="hidden" />
 
             </div>
 

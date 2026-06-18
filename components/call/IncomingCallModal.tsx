@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useCallStore } from "@/store/callStore"
 import { useSocketStore } from "@/store/socketStore"
 import { acceptCall, rejectCall } from "@/api/call"
-import { createPeerConnection, getLocalStream } from "@/lib/webrtc"
+import { cleanup, createPeerConnection, getLocalStream } from "@/lib/webrtc"
 
 export const IncomingCallModal = () => {
     const incomingCall = useCallStore(s => s.incomingCall)
@@ -33,77 +33,97 @@ export const IncomingCallModal = () => {
 
     if (!incomingCall) return null
 
-    const handleAccept = async () => {
-        if (!incomingCall || !socket) return
-        if (!incomingCall.offer) {
-            console.error("❌ no offer yet — wait a moment")
+  const handleAccept = async () => {
+    if (!incomingCall || !socket) return
+
+    // wait for offer if not here yet
+    const offer = await waitForOffer()
+    if (!offer) {
+        console.error("❌ offer never arrived, aborting")
+        return
+    }
+
+    try {
+        await acceptCall(incomingCall.callId)
+
+        const localStream = await getLocalStream(incomingCall.type)
+
+        const pc = createPeerConnection()
+        // remove pc.ontrack here — let createPeerConnection handle it
+
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream))
+
+        pc.onicecandidate = ({ candidate }) => {
+            if (candidate && candidate.candidate) {
+                socket.emit("webrtc:ice-candidate", {
+                    callId: incomingCall.callId,
+                    candidate,
+                    targetUserId: incomingCall.callerId
+                })
+            }
+        }
+
+        socket.emit("join-room", incomingCall.callId)
+
+        await pc.setRemoteDescription(offer)   // use the awaited offer
+        const answer = await pc.createAnswer()
+        await pc.setLocalDescription(answer)
+
+        socket.emit("webrtc:answer", {
+            callId: incomingCall.callId,
+            answer,
+            targetUserId: incomingCall.callerId
+        })
+
+        setActiveCall({
+            callId: incomingCall.callId,
+            peerId: incomingCall.callerId,
+            peerName: incomingCall.callerName,
+            peerAvatar: incomingCall.callerAvatar,
+            type: incomingCall.type,
+            status: "connecting",
+            isMuted: false,
+            isCameraOff: false,
+        })
+        clearIncomingCall()
+
+    } catch (err) {
+        console.error("Failed to accept call:", err)
+        cleanup()
+        clearIncomingCall()
+    }
+}
+
+const waitForOffer = (): Promise<RTCSessionDescriptionInit | null> => {
+    return new Promise((resolve) => {
+        const existing = useCallStore.getState().incomingCall?.offer
+        if (existing) {
+            resolve(existing)
             return
         }
 
-        try {
-            await acceptCall(incomingCall.callId)
-
-            const localStream = await getLocalStream(incomingCall.type)
-            if (localVideoRef.current) {
-                localVideoRef.current.srcObject = localStream
+        const unsub = useCallStore.subscribe((state) => {
+            const offer = state.incomingCall?.offer
+            if (offer) {
+                unsub()
+                clearTimeout(timeout)
+                resolve(offer)
             }
+        })
 
-            const pc = createPeerConnection()
-
-            localStream.getTracks().forEach(track => pc.addTrack(track, localStream))
-
-            pc.onicecandidate = ({ candidate }) => {
-                if (candidate) {
-                    socket.emit("webrtc:ice-candidate", {
-                        callId: incomingCall.callId,
-                        candidate,
-                        targetUserId: incomingCall.callerId
-                    })
-                }
-            }
-
-            pc.ontrack = ({ streams }) => {
-                if (remoteVideoRef.current) {
-                    remoteVideoRef.current.srcObject = streams[0]
-                }
-            }
-
-            socket.emit("join-room", incomingCall.callId)
-
-            if (!incomingCall.offer) {
-                throw new Error("No offer received from caller")
-            }
-            await pc.setRemoteDescription(incomingCall.offer)
-
-            const answer = await pc.createAnswer()
-            await pc.setLocalDescription(answer)
-
-            socket.emit("webrtc:answer", { callId: incomingCall.callId, answer, targetUserId: incomingCall.callerId })
-
-            setActiveCall({
-                callId: incomingCall.callId,
-                peerId: incomingCall.callerId,
-                peerName: incomingCall.callerName,
-                peerAvatar: incomingCall.callerAvatar,
-                type: incomingCall.type,
-                status: "connecting",
-                isMuted: false,
-                isCameraOff: false,
-            })
-            clearIncomingCall()
-
-        } catch (err) {
-            console.error("Failed to accept call:", err)
-            clearIncomingCall()
-        }
-    }
-
+        const timeout = setTimeout(() => {
+            unsub()
+            resolve(null)
+        }, 5000)
+    })
+}
     const handleReject = async () => {
         try {
             await rejectCall(incomingCall.callId)
         } catch (err) {
             console.error(err)
         } finally {
+              cleanup()  
             clearIncomingCall()
         }
     }

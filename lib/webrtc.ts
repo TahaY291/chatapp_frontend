@@ -1,6 +1,5 @@
 import { useCallStore } from "@/store/callStore"
 
-// lib/webrtc.ts
 let peerConnection: RTCPeerConnection | null = null
 let localStream: MediaStream | null = null
 
@@ -11,19 +10,20 @@ export const createPeerConnection = () => {
             { urls: "stun:stun1.l.google.com:19302" },
         ]
     })
-    // Attach remote stream to the active remote video element when tracks arrive
     peerConnection.ontrack = (event) => {
         try {
             const remoteVideo = document.getElementById("remote-video") as HTMLVideoElement | null
+            const remoteAudio = document.getElementById("remote-audio") as HTMLAudioElement | null
             if (remoteVideo) {
                 remoteVideo.srcObject = event.streams[0]
             }
+            if (remoteAudio) {
+                remoteAudio.srcObject = event.streams[0]
+            }
         } catch (err) {
-            // running in non-DOM environment (SSR) — ignore
         }
     }
 
-    // Update call status when connection state changes
     peerConnection.onconnectionstatechange = () => {
         const pc = peerConnection
         if (!pc) return
@@ -53,7 +53,7 @@ export const getLocalStream = async (callType: "audio" | "video") => {
         const localVideo = document.getElementById("local-video") as HTMLVideoElement | null
         if (localVideo) localVideo.srcObject = localStream
     } catch (err) {
-        // ignore when document is not present
+        
     }
     return localStream
 }

@@ -19,51 +19,50 @@ export const CallButtons = ({ conversationId, peerId, peerName, peerAvatar }: Pr
     const setOutgoingCall = useCallStore(s => s.setOutgoingCall)
     const socket = useSocketStore(s => s.socket)
 
-const handleCall = async (type: "audio" | "video") => {
-    if (!socket) return
+    const handleCall = async (type: "audio" | "video") => {
+        if (!socket) return
 
-    try {
-        const { callId, callerId } = await initiateCall(conversationId, type)
+        try {
+            const { callId, callerId } = await initiateCall(conversationId, type)
 
-        const localStream = await getLocalStream(type)
-        const pc = createPeerConnection()
+            const localStream = await getLocalStream(type)
+            const pc = createPeerConnection()
 
-        localStream.getTracks().forEach(track => pc.addTrack(track, localStream))
+            localStream.getTracks().forEach(track => pc.addTrack(track, localStream))
 
-        const iceCandidates: RTCIceCandidateInit[] = []
-        pc.onicecandidate = ({ candidate }) => {
-            if (candidate) {
-                iceCandidates.push(candidate)
-                // send to target user
-                socket.emit("webrtc:ice-candidate", { callId, candidate, targetUserId: peerId })
+            const iceCandidates: RTCIceCandidateInit[] = []
+            pc.onicecandidate = ({ candidate }) => {
+                if (candidate && candidate.candidate) {
+                    iceCandidates.push(candidate)
+                    socket.emit("webrtc:ice-candidate", { callId, candidate, targetUserId: peerId })
+                }
             }
+
+            const offer = await pc.createOffer()
+            await pc.setLocalDescription(offer)
+
+            // join room first
+            socket.emit("join-room", callId)
+
+            setTimeout(() => {
+                socket.emit("webrtc:offer", { callId, offer, targetUserId: peerId })
+                console.log("📤 offer sent to room:", callId)
+            }, 100)
+
+            setOutgoingCall({
+                callId,
+                callerId,
+                receiverId: peerId,
+                receiverName: peerName,
+                receiverAvatar: peerAvatar,
+                type,
+                conversationId
+            })
+
+        } catch (err) {
+            console.error("Failed to initiate call:", err)
         }
-
-        const offer = await pc.createOffer()
-        await pc.setLocalDescription(offer)
-
-        // join room first
-        socket.emit("join-room", callId)
-
-setTimeout(() => {
-    socket.emit("webrtc:offer", { callId, offer, targetUserId: peerId })
-    console.log("📤 offer sent to room:", callId)
-}, 500)
-
-        setOutgoingCall({
-            callId,
-            callerId,
-            receiverId: peerId,
-            receiverName: peerName,
-            receiverAvatar: peerAvatar,
-            type,
-            conversationId
-        })
-
-    } catch (err) {
-        console.error("Failed to initiate call:", err)
     }
-}
     return (
         <div className="flex items-center gap-1">
             <Button

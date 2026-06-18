@@ -40,23 +40,33 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
 
         socket.on("webrtc:answer", async ({ answer }) => {
             const pc = getPeerConnection()
-            if (pc) {
-                await pc.setRemoteDescription(answer)
-                console.log("✓ answer applied to peer connection")
-            } else {
+            if (!pc) {
                 console.log("✗ no peer connection found when answer arrived")
+                return
+            }
+
+            try {
+                const state = pc.signalingState
+                if (state === "have-local-offer" || state === "have-remote-offer") {
+                    await pc.setRemoteDescription(answer)
+                    console.log("✓ answer applied to peer connection")
+                } else {
+                    console.warn("⚠️ received answer in wrong signaling state", state)
+                }
+            } catch (err) {
+                console.error("✗ failed to set remote answer:", err)
             }
         })
 
         socket.on("webrtc:ice-candidate", async ({ candidate }) => {
             const pc = getPeerConnection()
-            if (pc && candidate) {
-                try {
-                    await pc.addIceCandidate(candidate)
-                    console.log("✓ ICE candidate added")
-                } catch (err) {
-                    console.error("✗ failed to add ICE candidate:", err)
-                }
+            if (!pc || !candidate || !candidate.candidate) return
+
+            try {
+                await pc.addIceCandidate(candidate)
+                console.log("✓ ICE candidate added")
+            } catch (err) {
+                console.error("✗ failed to add ICE candidate:", err)
             }
         })
 socket.on("call:accepted", async ({ callId }) => {
@@ -113,7 +123,6 @@ socket.on("call:incoming", (data) => {
             if (activeId === message.conversationId) {
                 useMessageStore.getState().addMessage(message)
             }
-            console.log("after", message)
 
             useConversationStore.getState().updateConversationOnNewMessage(message)
         })

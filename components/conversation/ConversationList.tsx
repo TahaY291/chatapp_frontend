@@ -10,7 +10,7 @@ export const ConversationList = () => {
   if (loading) return <ConversationSkeletonList />
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto ">
        {
         conversations.map(conv => {
           return(

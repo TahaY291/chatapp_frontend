@@ -13,13 +13,18 @@ export const sendMessage = async (
     replyToId?: string
 ) => {
     if (file) {
+        console.log('file is here', file)
         const formData = new FormData()
         formData.append("conversationId", conversationId)
         formData.append("file", file)
         if (content) formData.append("content", content)
         if (replyToId) formData.append("replyToId", replyToId)
 
-        const res = await api.post("/message/send", formData)
+        const res = await api.post("/message/send", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        })
         return res.data.data
     }
 

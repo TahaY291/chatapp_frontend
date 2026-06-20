@@ -23,7 +23,9 @@ const ConversationItem = ({ conversationId, otherAvatarUrl, otherUsername , nick
   const setActiveConversation = useConversationStore(s => s.setActiveConversation)
   const activeConversation = useConversationStore(s => s.activeConversation)
   const name = nickname ?? otherUsername
-  const isActive = activeConversation === conversationId   // ← derive active state
+  const isActive = activeConversation === conversationId
+
+  // console.log(conversationId, otherAvatarUrl, otherUsername , nickname, lastMessage, lastMessageAt, unreadCount, otherIsOnline, "This is ConversationItem props")
 
 
   const handleClick = () => {

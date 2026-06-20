@@ -20,3 +20,8 @@ export const endCall = async (callId: string) => {
     const res = await api.patch(`/call/${callId}/end`)
     return res.data.data
 }
+
+export const getCallInfo = async () => {
+    const res = await api.get(`/call/calls`)
+    return res.data.data
+}

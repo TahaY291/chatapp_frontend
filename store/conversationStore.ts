@@ -1,8 +1,8 @@
 import { create } from "zustand"
 import { getDirectConversations } from "@/api/conversations"
-import { getGroupConversations } from "@/api/groups"
 import { useAuthStore } from "./authStore"
-type ConversationType = "direct" | "group"
+import { getCallInfo } from "@/api/call"
+type ConversationType = "direct" | "calls"
 
 interface ConversationStore {
     conversations: any[]
@@ -33,10 +33,11 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         try {
             const data = type === "direct"
                 ? await getDirectConversations()
-                : await getGroupConversations()
+                : await getCallInfo()
             set({ conversations: Array.isArray(data) ? data : [], loading: false })
+            console.log("Fetched conversations:", data)
         } catch (err) {
-            set({ conversations: [], loading: false })  // ← stop loading on error too
+            console.error("Failed to fetch conversations:", err)
         }
     },
     updateConversationOnNewMessage: (message) => {

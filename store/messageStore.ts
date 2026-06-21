@@ -10,8 +10,9 @@ interface MessageStore {
 
     fetchMessages: (conversationId: string, page?: number) => Promise<void>
     loadMore: () => Promise<void>
-    addMessage: (message: any) => void        // called by socket
+    addMessage: (message: any) => void
     setActiveConversation: (id: string) => void
+    updateMessage: (updatedMessage: any) => void
     reset: () => void
 }
 
@@ -58,12 +59,18 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
         await get().fetchMessages(activeConversationId, nextPage)
     },
 
-    // called directly by socket store when new message arrives
     addMessage: (message) => {
         set(state => ({
-            messages: [...state.messages, message]  // append at bottom (newest)
+            messages: [...state.messages, message]
         }))
     },
+    updateMessage: (updatedMessage: any) => {
+    set(state => ({
+        messages: state.messages.map(msg =>
+            msg.id === updatedMessage.id ? updatedMessage : msg
+        )
+    }))
+},
 
     reset: () => set({
         messages: [],

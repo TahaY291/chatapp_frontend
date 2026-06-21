@@ -69,26 +69,26 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
                 console.error("✗ failed to add ICE candidate:", err)
             }
         })
-socket.on("call:accepted", async ({ callId }) => {
-    const outgoing = useCallStore.getState().outgoingCall
-    if (!outgoing) return
+        socket.on("call:accepted", async ({ callId }) => {
+            const outgoing = useCallStore.getState().outgoingCall
+            if (!outgoing) return
 
-    useCallStore.getState().clearOutgoingCall()
-    useCallStore.getState().setActiveCall({
-        callId,
-        peerId: outgoing.receiverId,
-        peerName: outgoing.receiverName,
-        peerAvatar: outgoing.receiverAvatar,
-        type: outgoing.type,
-        status: "connecting",
-        isMuted: false,
-        isCameraOff: false
-    })
+            useCallStore.getState().clearOutgoingCall()
+            useCallStore.getState().setActiveCall({
+                callId,
+                peerId: outgoing.receiverId,
+                peerName: outgoing.receiverName,
+                peerAvatar: outgoing.receiverAvatar,
+                type: outgoing.type,
+                status: "connecting",
+                isMuted: false,
+                isCameraOff: false
+            })
 
-    socket.emit("join-room", callId)
-    console.log("✅ room joined by caller:", callId)
+            socket.emit("join-room", callId)
+            console.log("✅ room joined by caller:", callId)
 
-})
+        })
 
 
         socket.on("call:rejected", () => {
@@ -99,33 +99,39 @@ socket.on("call:accepted", async ({ callId }) => {
             useCallStore.getState().endCall()
         })
 
-      
-socket.on("call:incoming", (data) => {
-    // get caller info from conversation store
-    const conversations = useConversationStore.getState().conversations
-    const conv = conversations.find(c => c.conversationId === data.conversationId)
 
-    useCallStore.getState().setIncomingCall({
-        callId: data.callId,
-        callerId: data.callerId,
-        callerName: conv?.otherUsername ?? "Unknown",
-        callerAvatar: conv?.otherAvatarUrl ?? null,
-        type: data.type,
-        conversationId: data.conversationId,
-        offer: null
-    })
-})
+        socket.on("call:incoming", (data) => {
+            // get caller info from conversation store
+            const conversations = useConversationStore.getState().conversations
+            const conv = conversations.find(c => c.conversationId === data.conversationId)
+
+            useCallStore.getState().setIncomingCall({
+                callId: data.callId,
+                callerId: data.callerId,
+                callerName: conv?.otherUsername ?? "Unknown",
+                callerAvatar: conv?.otherAvatarUrl ?? null,
+                type: data.type,
+                conversationId: data.conversationId,
+                offer: null
+            })
+        })
 
         socket.on("receive-message", (message) => {
-            console.log('before', message)
-
             const activeId = useMessageStore.getState().activeConversationId
             if (activeId === message.conversationId) {
                 useMessageStore.getState().addMessage(message)
             }
-
             useConversationStore.getState().updateConversationOnNewMessage(message)
         })
+
+        socket.on("message-updated", (message) => {
+            const activeId = useMessageStore.getState().activeConversationId
+            if (activeId === message.conversationId) {
+                useMessageStore.getState().updateMessage(message)
+            }
+            useConversationStore.getState().updateConversationOnNewMessage(message)
+        })
+
 
 
         set({ socket })

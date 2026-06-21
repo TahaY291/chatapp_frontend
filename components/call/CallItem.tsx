@@ -91,22 +91,13 @@ const CallItem = (call: Props) => {
                 </div>
             </div>
 
-            {/* Time + call back button */}
             <div className="flex flex-col items-end gap-1 shrink-0">
                 <span className="text-xs text-muted-foreground">
                     {formatCallTime(call.createdAt)}
                 </span>
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        // trigger call back — wire to your CallButtons logic
-                    }}
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                >
                     <CallButtons conversationId={call.conversationId} peerId={call.receiverId} peerName={call?.receiverUsername} peerAvatar={call?.receiverAvatar ?? ""} />
-                </button>
-            </div>
 
+            </div>
         </div>
     )
 }

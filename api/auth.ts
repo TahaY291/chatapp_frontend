@@ -20,6 +20,10 @@ export const loginUser= async(data: LoginUser) => {
     const response  = await api.post('/user/login', data)
     return response
 }
+export const logOutUser= async() => {
+    const response  = await api.post('/user/logout')
+    return response
+}
 
 export const resendOtp = async (data: ResendOtp) => {
     const response = await api.post('/user/resend-otp' , data)

@@ -5,10 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Loader2 } from "lucide-react"
 import { useSearchStore } from "@/store/searchStore"
 import { useAuthStore } from "@/store/authStore"
+import { logOutUser } from "@/api/auth"
+import { set } from "zod"
 
 const Navbar = () => {
   const { query, results, loading, error, setQuery, searchUser, startConversation, clear } = useSearchStore()
-  const { user } = useAuthStore()
+  const { user , clearUser } = useAuthStore()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -31,6 +33,11 @@ const Navbar = () => {
     await startConversation(user)
   }
 
+  const handleLogout = async () => {
+    await logOutUser()
+    clearUser()
+  }
+
   const showDropdown = results || error || loading
 
   return (
@@ -43,10 +50,10 @@ const Navbar = () => {
           </div>
           <span className="font-semibold text-foreground tracking-tight">Converse</span>
         </div>
-        <Avatar className="cursor-pointer hover:opacity-80 transition-opacity w-8 h-8">
+        <Avatar onClick={()=>handleLogout()} className="cursor-pointer hover:opacity-80 transition-opacity w-8 h-8">
           <AvatarImage src={user?.avatarUrl ?? ""} alt="Your profile" />
           <AvatarFallback className="bg-primary text-primary-foreground font-medium text-xs">
-            YO
+            yo
           </AvatarFallback>
         </Avatar>
       </div>

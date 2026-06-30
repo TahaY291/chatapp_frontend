@@ -4,6 +4,7 @@ import { useConversationStore } from "./conversationStore"
 import { useMessageStore } from "./messageStore"
 import { useCallStore } from "./callStore"
 import { getPeerConnection } from "@/lib/webrtc"
+import { useRagStore } from "./rag.store"
 
 interface SocketStore {
     socket: Socket | null
@@ -130,6 +131,13 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
                 useMessageStore.getState().updateMessage(message)
             }
             useConversationStore.getState().updateConversationOnNewMessage(message)
+        })
+        socket.on('rag:token', ({ token }: { token: string }) => {
+            useRagStore.getState().appendToken(token)
+        })
+
+        socket.on('rag:done', () => {
+            useRagStore.getState().finalizeAnswer()
         })
 
 

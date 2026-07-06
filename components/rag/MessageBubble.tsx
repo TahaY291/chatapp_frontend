@@ -7,6 +7,14 @@ interface Props {
     streamingMessage?: string
 }
 
+const ThreeDots = () => (
+    <span className="flex items-center gap-1 py-1">
+        <span className="w-1 h-1 rounded-full bg-current animate-bounce [animation-delay:0ms]" />
+        <span className="w-1 h-1 rounded-full bg-current animate-bounce [animation-delay:150ms]" />
+        <span className="w-1 h-1 rounded-full bg-current animate-bounce [animation-delay:300ms]" />
+    </span>
+)
+
 const MessageBubble = ({ question, answer, isStreaming, streamingMessage }: Props) => {
     return (
         <div className="flex flex-col gap-3 py-4 border-b border-border last:border-none">
@@ -23,10 +31,10 @@ const MessageBubble = ({ question, answer, isStreaming, streamingMessage }: Prop
                     {isStreaming ? (
                         <span>
                             {streamingMessage}
-                            <Loader2 className="inline ml-1 w-3 h-3 animate-spin" />
+                            {!streamingMessage && <ThreeDots />}
                         </span>
                     ) : (
-                        answer ?? <Loader2 className="w-3 h-3 animate-spin" />
+                        answer ?? <ThreeDots />
                     )}
                 </div>
             </div>

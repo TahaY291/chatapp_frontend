@@ -2,15 +2,19 @@
 import { useEffect, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Loader2 } from "lucide-react"
+import { Search, Loader2, LogOut } from "lucide-react"
 import { useSearchStore } from "@/store/searchStore"
 import { useAuthStore } from "@/store/authStore"
 import { logOutUser } from "@/api/auth"
 import { set } from "zod"
+import { Sparkles } from "lucide-react"
+import Link from "next/link"
+import { Button } from "../ui/button"
+
 
 const Navbar = () => {
   const { query, results, loading, error, setQuery, searchUser, startConversation, clear } = useSearchStore()
-  const { user , clearUser } = useAuthStore()
+  const { user, clearUser } = useAuthStore()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -50,12 +54,28 @@ const Navbar = () => {
           </div>
           <span className="font-semibold text-foreground tracking-tight">Converse</span>
         </div>
-        <Avatar onClick={()=>handleLogout()} className="cursor-pointer hover:opacity-80 transition-opacity w-8 h-8">
-          <AvatarImage src={user?.avatarUrl ?? ""} alt="Your profile" />
-          <AvatarFallback className="bg-primary text-primary-foreground font-medium text-xs">
-            yo
-          </AvatarFallback>
-        </Avatar>
+        <div className="flex items-center justify-between">
+          <Link href="/rag">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+              <Sparkles className="w-5 h-5" />
+            </Button>
+          </Link>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            className="rounded-full p-0 w-8 h-8 hover:opacity-80 transition-opacity"
+            title="Logout"
+          >
+            <Avatar className="w-8 h-8 cursor-pointer">
+              <AvatarImage src={user?.avatarUrl ?? ""} alt="Your profile" />
+              <AvatarFallback className="bg-primary text-primary-foreground font-medium text-xs">
+                <LogOut className="w-3.5 h-3.5" />
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        </div>
       </div>
 
       {/* Search */}

@@ -6,10 +6,10 @@ import { User } from "@/types/auth.type"
 interface AuthStore {
     user: User | null
     isAuthenticated: boolean
-    hasHydrated: boolean          // ← add this
+    hasHydrated: boolean
     setUser: (user: User) => void
     clearUser: () => void
-    setHasHydrated: (state: boolean) => void  // ← add this
+    setHasHydrated: (state: boolean) => void
 }
 
 export const useAuthStore = create<AuthStore>()(

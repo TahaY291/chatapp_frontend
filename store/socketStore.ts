@@ -16,41 +16,41 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
     socket: null,
 
     connect: (userId) => {
+        // ✅ GUARD: if a live socket already exists, don't create another one
+        const existing = get().socket
+        if (existing?.connected) {
+
+            return
+        }
+        // clean up any stale/disconnected socket before creating a fresh one
+        existing?.disconnect()
+
         const socket = io(process.env.NEXT_PUBLIC_BACKEND_URL!, {
             query: { userId }
         })
 
         socket.on("connect", () => {
             socket.emit("user:online", userId)
-            console.log("Socket Connected")
         })
 
         socket.on("webrtc:offer", ({ offer }) => {
-            console.log("📥 webrtc:offer received, storing in incomingCall")
             const incoming = useCallStore.getState().incomingCall
             if (incoming) {
                 useCallStore.getState().setIncomingCall({
                     ...incoming,
                     offer
                 })
-                console.log("✅ offer stored in incomingCall")
-            } else {
-                console.log("❌ no incomingCall in store when offer arrived")
             }
         })
 
         socket.on("webrtc:answer", async ({ answer }) => {
             const pc = getPeerConnection()
-            if (!pc) {
-                console.log("✗ no peer connection found when answer arrived")
-                return
-            }
+            if (!pc) return
 
             try {
                 const state = pc.signalingState
                 if (state === "have-local-offer" || state === "have-remote-offer") {
                     await pc.setRemoteDescription(answer)
-                    console.log("✓ answer applied to peer connection")
                 } else {
                     console.warn("⚠️ received answer in wrong signaling state", state)
                 }
@@ -65,11 +65,11 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
 
             try {
                 await pc.addIceCandidate(candidate)
-                console.log("✓ ICE candidate added")
             } catch (err) {
                 console.error("✗ failed to add ICE candidate:", err)
             }
         })
+
         socket.on("call:accepted", async ({ callId }) => {
             const outgoing = useCallStore.getState().outgoingCall
             if (!outgoing) return
@@ -87,10 +87,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
             })
 
             socket.emit("join-room", callId)
-            console.log("✅ room joined by caller:", callId)
-
         })
-
 
         socket.on("call:rejected", () => {
             useCallStore.getState().clearOutgoingCall()
@@ -100,9 +97,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
             useCallStore.getState().endCall()
         })
 
-
         socket.on("call:incoming", (data) => {
-            // get caller info from conversation store
             const conversations = useConversationStore.getState().conversations
             const conv = conversations.find(c => c.conversationId === data.conversationId)
 
@@ -132,6 +127,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
             }
             useConversationStore.getState().updateConversationOnNewMessage(message)
         })
+
         socket.on('rag:token', ({ token }: { token: string }) => {
             useRagStore.getState().appendToken(token)
         })
@@ -139,8 +135,6 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
         socket.on('rag:done', () => {
             useRagStore.getState().finalizeAnswer()
         })
-
-
 
         set({ socket })
     },

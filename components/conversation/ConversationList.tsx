@@ -1,4 +1,3 @@
-// components/shared/ConversationList.tsx
 "use client"
 import { useConversationStore } from "@/store/conversationStore"
 import ConversationItem from "./ConversationItem"

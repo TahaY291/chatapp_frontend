@@ -14,11 +14,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const activeType = useConversationStore(s => s.activeType)
   const { connect, disconnect } = useSocketStore()
   const user = useAuthStore(s => s.user)
-  const hasHydrated = useAuthStore(s => s.hasHydrated)  // ← read this
+  const hasHydrated = useAuthStore(s => s.hasHydrated)
   const router = useRouter()
 
   useEffect(() => {
-    if (!hasHydrated) return       // ← wait, do nothing yet
+    if (!hasHydrated) return
 
     if (!user) {
       router.push("/login")
@@ -26,10 +26,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
 
     fetchConversations(activeType)
-    connect(user.id)               // ← safe, no ! needed
+    connect(user.id)
 
     return () => disconnect()
-  }, [hasHydrated, user])          // ← depend on both
+  }, [hasHydrated, user?.id])
 
 if (!hasHydrated) return (
   <div className="flex h-screen items-center justify-center bg-background">

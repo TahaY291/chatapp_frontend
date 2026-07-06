@@ -5,7 +5,7 @@ export const searchUser = async (query: string) => {
   return res.data.data
 }
 
-export const saveContact = async (contactId: string, nickname?: string) => {
-  const res = await api.post("/contact/save", { contactId, nickname })
-  return res.data
-}
+// export const saveContact = async (contactId: string, nickname?: string) => {
+//   const res = await api.post("/contact/save", { contactId, nickname })
+//   return res.data
+// }

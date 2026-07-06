@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { searchUser } from '@/api/user'
-import { saveContact } from "@/api/user"
+// import { saveContact } from "@/api/user"
 import { createConversation } from "@/api/conversations"
 import { useConversationStore } from "./conversationStore"
 
@@ -36,7 +36,6 @@ export const useSearchStore = create<SearchStore>((set, get) => ({
 
     searchUser: async () => {
         const { query } = get()
-        console.log(query)
         if (!query.trim()) return
         set({ loading: true, error: null, results: null })
         try {
@@ -52,7 +51,7 @@ export const useSearchStore = create<SearchStore>((set, get) => ({
     startConversation: async (user) => {
         try {
 
-            await saveContact(user.id)
+            // await saveContact(user.id)
             const conversation = await createConversation(user.id)
             useConversationStore.getState().addConversation(conversation)
             get().clear()

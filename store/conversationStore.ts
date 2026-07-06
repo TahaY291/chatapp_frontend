@@ -14,7 +14,7 @@ interface ConversationStore {
     updateConversationOnNewMessage: (message: any) => void
     setActiveConversation: (conversationId: string) => void
     addConversation: (conversation: any) => void
-    resetUnreadCount: (conversationId: string)=> void
+    resetUnreadCount: (conversationId: string) => void
 
 }
 
@@ -29,20 +29,21 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
     },
 
     fetchConversations: async (type) => {
+        if (get().loading) return   // ← blocks the Strict Mode double-call
         set({ loading: true })
         try {
             const data = type === "direct"
                 ? await getDirectConversations()
                 : await getCallInfo()
             set({ conversations: Array.isArray(data) ? data : [], loading: false })
-            console.log("Fetched conversations:", data)
         } catch (err) {
             console.error("Failed to fetch conversations:", err)
+            set({ loading: false })
         }
     },
     updateConversationOnNewMessage: (message) => {
         const currentUserId = useAuthStore.getState().user?.id
-        
+
         set(state => ({
             conversations: state.conversations.map(conv => {
                 if (conv.conversationId !== message.conversationId) return conv
@@ -71,12 +72,12 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
         })
     },
     resetUnreadCount: (conversationId: string) => {
-    set(state => ({
-        conversations: state.conversations.map(conv =>
-            conv.conversationId === conversationId
-                ? { ...conv, unreadCount: 0 }
-                : conv
-        )
-    }))
-}
+        set(state => ({
+            conversations: state.conversations.map(conv =>
+                conv.conversationId === conversationId
+                    ? { ...conv, unreadCount: 0 }
+                    : conv
+            )
+        }))
+    }
 }))

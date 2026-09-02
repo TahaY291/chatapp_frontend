@@ -23,7 +23,7 @@ export default function LoginPage() {
     setLoading(true)
    try {
     const res = await loginUser(form)
-    setUser(res.data.data.loggedInUser)
+    setUser(res.data.loggedInUser)
     router.push("/chats")
 } catch (err) {
     if (axios.isAxiosError(err)) {

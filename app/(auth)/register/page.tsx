@@ -31,7 +31,7 @@ export default function RegisterPage() {
         setLoading(true)
         try {
             const res = await registerUser(form)
-            if (res.status === 201) {
+            if (res.statusCode === 201) {
                 router.push(`/verify-otp?email=${encodeURIComponent(form.email)}`)
             }
         } catch (error: any) {

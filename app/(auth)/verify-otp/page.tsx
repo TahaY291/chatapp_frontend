@@ -24,8 +24,8 @@ function VerifyOTPForm() {
     setLoading(true)
     try {
       const res = await verifyOtp({ otp, email })
-      if (res.status === 200) {
-        setUser(res.data)
+      if (res.statusCode === 200) {
+        setUser(res.data.user)
         router.push("/chats")
       }
     } catch (error: any) {
@@ -42,7 +42,7 @@ function VerifyOTPForm() {
     setLoading(true)
     try {
       const res = await resendOtp({ email })
-      if (res.status === 200) setMessage("Otp resent successfuly")
+      if (res.statusCode === 200) setMessage("Otp resent successfuly")
     } catch (error) {
       setMessage("Failed to resend OTP — try again")
     } finally {

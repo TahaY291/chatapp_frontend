@@ -6,11 +6,11 @@ const authRoutes = ["/login", "/register"]
 const verifiedOnlyRoutes = ["/chats", "/profile", "/settings"]
 
 export function proxy (req : NextRequest) {
-    const {pathname} = req.nextUrl
-    const accessToken = req.cookies.get("accessToken")?.value
-    const isVerified = req.cookies.get('isVerified')?.value
-    const email = req.cookies.get('email')?.value
-    console.log("Proxy middleware:", { email })
+    // const {pathname} = req.nextUrl
+    // const accessToken = req.cookies.get("accessToken")?.value
+    // const isVerified = req.cookies.get('isVerified')?.value
+    // const email = req.cookies.get('email')?.value
+    // console.log("Proxy middleware:", { email })
 
 //   if (!accessToken && protectedRoutes.some(r => pathname.startsWith(r))) {
 //         return NextResponse.redirect(new URL("/login", req.url))

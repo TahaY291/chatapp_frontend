@@ -31,7 +31,7 @@ export interface User {
     email: string,
     avatarUrl: string | null,
     about: string | null,
-    isONline: boolean,
+    isOnline: boolean,
     isVerified: boolean,
     createdAt: string
 }

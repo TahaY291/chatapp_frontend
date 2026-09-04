@@ -5,7 +5,6 @@ export const getMessagesByConversationId = async (conversationId: string , page 
     return response.data
 }
 
-
 export const sendMessage = async (
     conversationId: string,
     content: string,

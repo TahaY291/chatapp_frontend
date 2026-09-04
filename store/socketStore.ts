@@ -17,6 +17,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
 
     connect: (userId) => {
         // ✅ GUARD: if a live socket already exists, don't create another one
+        console.log("Connecting socket for userId:", userId)
         const existing = get().socket
         if (existing?.connected) {
 

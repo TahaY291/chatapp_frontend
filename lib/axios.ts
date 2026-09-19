@@ -23,7 +23,7 @@ const SKIP_INTERCEPT_URLS = [
 
 
 const api: AxiosInstance = axios.create({
-    baseURL: `${process.env.NEXT_PUBLIC_BACKEND_URL ?? ""}`,
+    baseURL: "/api",
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",

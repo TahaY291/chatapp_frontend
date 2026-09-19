@@ -32,7 +32,6 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
                 : set({ loadingMore: true })
 
             const data = await getMessagesByConversationId(conversationId, page)
-            console.log(data, "data in fetchMessages" )
             const { messages: newMessages, pagination  } = data.data
 
             if (page === 1) {

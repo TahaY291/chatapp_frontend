@@ -14,25 +14,30 @@ export default function LoginPage() {
   const router = useRouter()
   const [form, setForm] = useState({ email: "", password: "" })
   const [loading, setLoading] = useState(false)
-  const [showPassword , setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { setUser } = useAuthStore()
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-   try {
-    const res = await loginUser(form)
-    setUser(res.data.loggedInUser)
-    router.push("/chats")
-} catch (err) {
-    if (axios.isAxiosError(err)) {
+    try {
+      const res = await loginUser(form)
+      setUser(res.data.loggedInUser)
+      console.log(res)
+      router.push("/chats")
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        console.log("STATUS:", err.response?.status);
+        console.log("DATA:", err.response?.data);
+        console.log("MESSAGE:", err.response?.data?.message);
+
         setError(err.response?.data?.message || "Login failed")
+      }
+    } finally {
+      setLoading(false)
     }
-} finally {
-    setLoading(false)
-}
-}
+  }
 
 
   return (
@@ -57,32 +62,32 @@ export default function LoginPage() {
                   className="text-xs text-muted-foreground hover:underline">
                   Forgot password?
                 </Link>
-                </div>
               </div>
-              <div className="space-y-1">
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={form.password}
-                    onChange={e => {
-                      setForm({ ...form, password: e.target.value })
-                    }}
-                  />
-                  {/* show/hide password toggle */}
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? "Hide" : "Show"}
-                  </button>
-                </div>
+            </div>
+            <div className="space-y-1">
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={form.password}
+                  onChange={e => {
+                    setForm({ ...form, password: e.target.value })
+                  }}
+                />
+                {/* show/hide password toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Signing in..." : "Sign in"}
-              </Button>
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
+            </Button>
           </form>
           <p className="text-center text-sm text-muted-foreground mt-4">
             Don't have an account?{" "}

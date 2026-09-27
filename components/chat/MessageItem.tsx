@@ -33,6 +33,7 @@ const getFileName = (url: string) => {
 
 const MessageItem = ({ content, mediaUrl, type, isMine, time, status }: Props) => {
     const isUploading = mediaUrl === "uploading"
+    const isFailed = mediaUrl === "failed"
 
     return (
         <div className={cn(
@@ -54,6 +55,10 @@ const MessageItem = ({ content, mediaUrl, type, isMine, time, status }: Props) =
                             <div className="w-70 h-50 bg-black/10 flex items-center justify-center">
                                 <div className="w-5 h-5 rounded-full border-2 border-current border-t-transparent animate-spin opacity-60" />
                             </div>
+                        ) : isFailed ? (
+                            <div className="w-70 h-50 bg-black/10 flex flex-col items-center justify-center gap-1 text-xs opacity-70">
+                                <span>⚠️ Upload failed</span>
+                            </div>
                         ) : (
                             <a href={mediaUrl} target="_blank" rel="noopener noreferrer">
                                 <Image
@@ -65,9 +70,7 @@ const MessageItem = ({ content, mediaUrl, type, isMine, time, status }: Props) =
                                 />
                             </a>
                         )}
-                        {content && (
-                            <p className="text-sm px-3 py-2 leading-relaxed wrap-break-words">{content}</p>
-                        )}
+                        {content && <p className="text-sm px-3 py-2 leading-relaxed wrap-break-words">{content}</p>}
                     </div>
                 )}
 
